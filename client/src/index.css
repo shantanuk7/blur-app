@@ -1,0 +1,285 @@
+/* index.css */
+
+/* --- Keep Variables and Global Styles the Same --- */
+:root {
+  --background-color: #121212;
+  --text-color: #ffffff;
+  --border-color: #555;
+  --input-bg-color: transparent;
+  --button-bg-color: #333;
+  --button-hover-bg-color: #555;
+  --icon-color: var(--text-color);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%; /* Crucial for 100vh below */
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent body scrolling */
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+               Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* --- Scrollbar styling remains the same --- */
+body::-webkit-scrollbar { width: 8px; }
+body::-webkit-scrollbar-track { background: var(--background-color); }
+body::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; }
+
+/* --- **UPDATED** Root container --- */
+#root {
+  display: flex; /* Use Flexbox */
+  flex-direction: column; /* Stack children vertically */
+  height: 100vh; /* Make root take full viewport height */
+  overflow: hidden; /* Prevent root itself from scrolling */
+}
+
+/* --- **NEW** Content Wrapper --- */
+.content-wrapper {
+  flex-grow: 1; /* Allow this area to grow and fill available space */
+  overflow-y: auto; /* Enable vertical scrolling ONLY within this container */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  padding: 15px; /* Apply padding to the scrollable area */
+  /* min-height: 0; /* Important fix for flexbox overflow calculations in some cases */
+}
+
+/* --- **UPDATED** Container (Simpler) --- */
+/* This class might just be for semantic structure or max-width now */
+/* Remove padding, flex-grow, and overflow-y from here */
+.container {
+  width: 100%;
+  margin: 0 auto;
+  /* max-width: 800px; /* Optional: Add max-width if needed on wider screens */
+}
+
+/* --- Input, Textarea, Button, Navbar styles remain largely the same --- */
+/* ... (keep existing styles for input, textarea, button) ... */
+
+/* Minor fix for general button padding if needed */
+button {
+  display: block;
+  width: 100%;
+  padding: 12px 15px; /* Re-add padding if it was removed */
+  margin-bottom: 15px;
+  /* ... rest of button styles */
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px; /* Adjusted padding slightly */
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  flex-shrink: 0; /* Prevent Navbar from shrinking */
+  height: 56px; /* Keep fixed height */
+  width: 100%; /* Ensure it spans full width */
+}
+
+.navbar-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.navbar-spacer {
+  flex: 1; /* Takes up space in the middle */
+  /* Remove text-align: center; if title is not placed here */
+}
+
+.navbar-icon-button {
+  background: none;
+  border: none;
+  color: var(--icon-color);
+  cursor: pointer;
+  font-size: 1.6rem;
+  line-height: 1;
+  padding: 8px; /* Add padding back for easier tapping */
+  margin: 0; /* Remove default margins if any */
+  margin-bottom: 0;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  display: inline-flex; /* Helps center icon */
+  align-items: center;
+  justify-content: center;
+  width: 40px; /* Fixed width for consistent spacing */
+  height: 40px; /* Fixed height */
+}
+
+.navbar-icon-button:active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-text-button {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 1rem;
+  font-weight: normal;
+  padding: 8px 12px;
+  margin: 0 5px;
+  cursor: pointer;
+  width: auto;
+  margin-bottom: 0;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.navbar-text-button:active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- FAB Styling (keep as is, position:fixed works relative to viewport) --- */
+.fab {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  bottom: 20px;
+  right: 20px;
+  width: 56px; /* Slightly larger standard FAB size */
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background-color: #ffffff; /* White background */
+  color: #121212; /* Dark icon/text */
+  font-size: 28px; /* Adjust size */
+  line-height: 1; /* Remove extra line height */
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add shadow */
+  z-index: 1000; /* Ensure it's above other content */
+  /* Remove text-align if using flex */
+  /* Remove general button width/margin overrides if defined inline */
+  margin-bottom: 0;
+  font-weight: normal;
+}
+
+/* Apply flex column layout specifically to the content wrapper on editor pages */
+.note-editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  /* Inherit base content-wrapper styles if needed, or define explicitly */
+  flex-grow: 1;
+  overflow-y: auto; /* Allows scrolling if content exceeds viewport */
+  overflow-x: hidden;
+  padding: 20px 25px; /* Increase padding for more breathing room */
+}
+
+/* Style for the Title Input in New/Edit Note */
+.note-title-input {
+  background-color: transparent; /* Blend with page background */
+  border: none; /* Remove border */
+  outline: none; /* Remove default focus outline */
+  box-shadow: none; /* Remove custom focus shadow */
+
+  font-size: 1.9rem; /* Larger font size for title */
+  font-weight: 600; /* Bolder title */
+  color: var(--text-color); /* White text */
+  width: 100%;
+  padding: 10px 0; /* Minimal vertical padding, no horizontal */
+  margin-bottom: 15px; /* Space below title */
+  font-family: inherit; /* Ensure font consistency */
+  line-height: 1.3; /* Adjust line height for larger font */
+}
+.note-title-input::placeholder {
+   color: #888; /* Dimmer placeholder */
+   font-weight: 500; /* Slightly lighter placeholder */
+   opacity: 0.8;
+}
+
+/* Style for the Content Textarea in New/Edit Note */
+.note-content-textarea {
+  background-color: transparent; /* Blend with page background */
+  border: none; /* Remove border */
+  outline: none; /* Remove default focus outline */
+  box-shadow: none; /* Remove custom focus shadow */
+
+  font-size: 1.1rem; /* Comfortable reading size */
+  line-height: 1.7; /* Increase line spacing for readability */
+  color: var(--text-color); /* White text */
+  width: 100%;
+  padding: 5px 0; /* Minimal vertical padding */
+  margin-bottom: 0; /* Remove default margin */
+  font-family: inherit;
+  resize: none; /* Disable manual resizing by user */
+
+  flex-grow: 1; /* **Crucial**: Allow textarea to fill remaining vertical space */
+  min-height: 300px; /* Ensure a generous minimum height */
+  /* The combination of flex-grow and min-height works well */
+}
+.note-content-textarea::placeholder {
+   color: #888; /* Dimmer placeholder */
+   opacity: 0.8;
+}
+
+.note-editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  height: calc(100vh - 60px); /* Adjust based on Navbar height */
+}
+
+/* .editor-container {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+} */
+
+.editor-container {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 60px);
+  background-color: #121212;
+}
+
+/* Both layers stack on top of each other */
+.editor,
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100%;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* The editor is transparent so that only the overlay text is visible,
+   but its caret is visible (using caret-color) */
+.editor {
+  background: transparent;
+  color: transparent;
+  caret-color: white;
+  z-index: 2;
+  outline: none;
+}
+
+/* The overlay is non-interactive so that clicks and typing go to the editor */
+.overlay {
+  z-index: 1;
+  pointer-events: none;
+  color: white;
+}
+
+/* Apply blur effect for complete words */
+.blurred {
+  filter: blur(4px);
+  transition: filter 0.2s ease-in-out;
+}

@@ -1,0 +1,126 @@
+const User = require("../models/User");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { validationResult } = require("express-validator");
+const mg = require("../config/mailer");
+
+// Register new user with email verification
+const transporter = require('../config/mailer');
+
+const register = async (req, res) => {
+  // validation
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { name, email, password } = req.body;
+
+  try {
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create verification token valid for 1 day
+    const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      verificationToken
+    });
+
+    await user.save();
+
+    // Construct verification email
+    const verificationLink = `${process.env.BASE_URL}/api/auth/verify-email?token=${verificationToken}`;
+    const mailOptions = {
+      from: process.env.GMAIL_USER, // The sender address
+      to: email, // The receiver's email
+      subject: 'Email Verification',
+      text: `Please verify your email by clicking the link: ${verificationLink}`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Email sending error:', error);
+        return res.status(500).json({ message: 'Email could not be sent' });
+      }
+      res.status(201).json({ message: 'Registration successful. Please verify your email.' });
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Email verification handler
+const verifyEmail = async (req, res) => {
+  const { token } = req.query;
+  if (!token) {
+    return res.status(400).json({ message: "Invalid token" });
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findOne({
+      email: decoded.email,
+      verificationToken: token,
+    });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid token" });
+    }
+    user.emailVerified = true;
+    user.verificationToken = null;
+    await user.save();
+    res.status(200).json({ message: "Email verified successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: "Invalid or expired token" });
+  }
+};
+
+// User login handler
+const login = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    if (!user.emailVerified) {
+      return res
+        .status(401)
+        .json({ message: "Please verify your email before logging in" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // Generate JWT valid for 1 hour
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.status(200).json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { register, login, verifyEmail };
