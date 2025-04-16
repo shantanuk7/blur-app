@@ -10,9 +10,8 @@ connectDB();
 
 const app = express();
 
-// Configure CORS for specific origins
 const corsOptions = {
-    origin: '*', // Allow all origins (for testing only)
+    origin: 'https://blur-app-six.vercel.app',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204,
