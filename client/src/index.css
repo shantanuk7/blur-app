@@ -4,9 +4,9 @@
 :root {
   --background-color: #121212;
   --text-color: #ffffff;
-  --border-color: #555;
+  --border-color: #ececec;
   --input-bg-color: transparent;
-  --button-bg-color: #333;
+  --button-bg-color: transparent;
   --button-hover-bg-color: #555;
   --icon-color: var(--text-color);
 }

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link
 import './authStyles.css';
+import logo from "../assets/blur-logo.png";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -29,13 +30,16 @@ const Login = () => {
       navigate('/');
     } catch (err) {
       console.log(err);
-      
+
       setMessage(err.response?.data?.message || 'Login failed');
     }
   };
-  
+
   return (
     <div className="auth-container">
+      <div className="auth-logo">
+        <img src={logo} alt="Privacy Focused Note Taking PWA" />
+      </div>
       <div className="auth-card">
         <h2>Login</h2>
         {message && <p className="auth-message">{message}</p>}
@@ -58,9 +62,12 @@ const Login = () => {
           />
           <button type="submit">Login</button>
         </form>
+        <p className="auth-link">
+          Don't have an account? <Link to="/register">Register here</Link>
+        </p>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default Login; 

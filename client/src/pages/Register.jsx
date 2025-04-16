@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link
 import './authStyles.css'; // Import the CSS
+import logo from "../assets/blur-logo.png";
 
 const Register = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
@@ -32,6 +33,9 @@ const Register = () => {
 
   return (
     <div className="auth-container">
+      <div className="auth-logo">
+        <img src={logo} alt="Blur - Privacy Focused Note Taking App" />
+      </div>
       <div className="auth-card">
         <h2>Register</h2>
         {message && <p className="auth-message">{message}</p>}
@@ -62,6 +66,9 @@ const Register = () => {
           />
           <button type="submit">Register</button>
         </form>
+        <p className="auth-link">
+          Already have an account? <Link to="/login">Login here</Link>
+        </p>
       </div>
     </div>
   );

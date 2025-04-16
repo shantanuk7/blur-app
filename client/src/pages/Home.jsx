@@ -73,7 +73,6 @@ const Home = () => {
   );
 };
 
-// Keep or move styles to CSS
 const styles = {
   noteCard: {
     border: '1px solid var(--border-color)', // Use variable
@@ -84,7 +83,6 @@ const styles = {
     backgroundColor: 'var(--button-bg-color)', // Example background
     transition: 'background-color 0.2s ease',
   },
-  // Remove fab style from here if using .fab class in CSS
 };
 
 

@@ -1,99 +1,131 @@
 /* Improved Login and Register Page Styles */
 
 .auth-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh; /* Fill the viewport height */
-    padding: 20px;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Fill the viewport height */
+  padding: 20px;
+}
+
+.auth-card {
+  background-color: #1e1e1e; /* Slightly lighter background */
+  color: var(--text-color);
+  border-radius: 8px;
+  padding: 30px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.auth-card h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #f0f0f0;
+}
+
+.auth-message {
+  color: #e74c3c; /* Error message color */
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-form input {
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
+.auth-form input::placeholder {
+  color: #aaa;
+}
+
+.auth-form button {
+  background-color: #555;
+  color: var(--text-color);
+  border: none;
+  border-radius: 4px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.auth-form button:hover {
+  background-color: #777;
+}
+
+.auth-form button:active {
+  background-color: #444;
+}
+
+/* Link to Register Page */
+.auth-link {
+  margin-top: 15px;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+.auth-link a {
+  color: #5cb85c; /* Example green color for the link */
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.auth-link a:hover {
+  text-decoration: underline;
+}
+
+/* Specific to Register Page (if needed) */
+.register-form input:first-child { /* Style the name field differently if desired */
+  /* Add specific styles here */
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
   .auth-card {
-    background-color: #1e1e1e; /* Slightly lighter background */
-    color: var(--text-color);
-    border-radius: 8px;
-    padding: 30px;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    width: 95%;
   }
-  
+
   .auth-card h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #f0f0f0;
-  }
-  
-  .auth-message {
-    color: #e74c3c; /* Error message color */
+    font-size: 1.5rem;
     margin-bottom: 15px;
-    text-align: center;
   }
-  
-  .auth-form {
-    display: flex;
-    flex-direction: column;
-  }
-  
+
   .auth-form input {
-    padding: 12px 15px;
-    margin-bottom: 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background-color: var(--input-bg-color);
-    color: var(--text-color);
-    font-size: 1rem;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
   }
-  
-  .auth-form input::placeholder {
-    color: #aaa;
-  }
-  
+
   .auth-form button {
-    background-color: #555;
-    color: var(--text-color);
-    border: none;
-    border-radius: 4px;
-    padding: 12px 20px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    padding: 10px 18px;
+    font-size: 0.9rem;
   }
-  
-  .auth-form button:hover {
-    background-color: #777;
+
+  .auth-link {
+    font-size: 0.85em;
   }
-  
-  .auth-form button:active {
-    background-color: #444;
-  }
-  
-  /* Specific to Register Page (if needed) */
-  .register-form input:first-child { /* Style the name field differently if desired */
-    /* Add specific styles here */
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 600px) {
-    .auth-card {
-      padding: 20px;
-      width: 95%;
-    }
-  
-    .auth-card h2 {
-      font-size: 1.5rem;
-      margin-bottom: 15px;
-    }
-  
-    .auth-form input {
-      padding: 10px 12px;
-      margin-bottom: 12px;
-      font-size: 0.9rem;
-    }
-  
-    .auth-form button {
-      padding: 10px 18px;
-      font-size: 0.9rem;
-    }
-  }
+}
+
+.auth-logo {
+  display: flex;
+  justify-content: center; /* Center the logo horizontally */
+  margin-bottom: 40px; /* Add some space below the logo */
+}
+
+.auth-logo img {
+  max-width: 50px; /* Adjust the maximum width as needed */
+  height: auto; /* Maintain aspect ratio */
+}
