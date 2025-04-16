@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://192.168.1.2:5000/api'
+  baseURL: 'blur-api-ruby.vercel.app:5000/api'
 });
 
 export default API;
