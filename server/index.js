@@ -2,7 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
-const noteRoutes = require('./routes/noteRoutes');  // NEW
+const noteRoutes = require('./routes/noteRoutes');
 const cors = require('cors');
 
 dotenv.config();
@@ -10,7 +10,15 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
+// Configure CORS for specific origins
+const corsOptions = {
+  origin: 'https://blur-app-six.vercel.app',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204, // Some legacy browsers choke on 204
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Authentication routes
