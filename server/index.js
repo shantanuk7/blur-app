@@ -12,10 +12,10 @@ const app = express();
 
 // Configure CORS for specific origins
 const corsOptions = {
-  origin: 'https://blur-app-six.vercel.app',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-  optionsSuccessStatus: 204, // Some legacy browsers choke on 204
+    origin: '*', // Allow all origins (for testing only)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
