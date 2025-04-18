@@ -11,7 +11,7 @@ connectDB();
 const app = express();
 
 const corsOptions = {
-    origin: 'https://blur-app-six.vercel.app',
+    origin: ['https://blur-app-six.vercel.app','http://localhost:4173', 'http://192.168.1.2:4173', 'http://localhost:5173' ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204,
