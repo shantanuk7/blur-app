@@ -8,6 +8,7 @@ precacheAndRoute(self.__WB_MANIFEST);
 // Cache API calls (adjust the URL to your API endpoint)
 registerRoute(
   ({ url }) => url.origin === 'https://blur-api-ruby.vercel.app/api',
+  // ({ url }) => url.origin === 'http://localhost:5000/api',
   new StaleWhileRevalidate({
     cacheName: 'api-cache',
   })

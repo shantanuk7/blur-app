@@ -22,8 +22,9 @@ const Home = () => {
         setNotes(res.data);
       } catch (err) {
         console.error(err);
-        // Handle error appropriately, maybe clear token or show message
-        // navigate('/login'); // Might cause loop if token is invalid but present
+        // Clearing token and redirecting to login page if token expired.
+        localStorage.removeItem('token');
+        navigate('/login');
       }
     };
     fetchNotes();

@@ -34,7 +34,7 @@ const Register = () => {
   return (
     <div className="auth-container">
       <div className="auth-logo">
-        <img src={logo} alt="Blur - Privacy Focused Note Taking App" />
+        <img src={logo} alt="Blur - Privacy Focused Note Taking PWA" />
       </div>
       <div className="auth-card">
         <h2>Register</h2>

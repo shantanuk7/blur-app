@@ -38,7 +38,7 @@ const Login = () => {
   return (
     <div className="auth-container">
       <div className="auth-logo">
-        <img src={logo} alt="Privacy Focused Note Taking PWA" />
+        <img src={logo} alt=" " />
       </div>
       <div className="auth-card">
         <h2>Login</h2>

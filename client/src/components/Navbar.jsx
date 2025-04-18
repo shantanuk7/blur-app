@@ -13,6 +13,9 @@ import {
 const Navbar = ({ onSave, onBack, onDelete, blurEnabled, toggleBlur }) => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [showMenu, setShowMenu] = useState(false);
+
   const token = localStorage.getItem('token');
 
   const handleLogout = () => {
@@ -28,9 +31,35 @@ const Navbar = ({ onSave, onBack, onDelete, blurEnabled, toggleBlur }) => {
     leftContent = <div className="navbar-title">Blur</div>;
     if (token) {
       rightContent = (
-        <button className="navbar-icon-button" onClick={() => {}} aria-label="Menu">
-          <IoEllipsisVertical />
-        </button>
+        <div style={{ position: 'relative' }}>
+          <button className="navbar-icon-button" onClick={() => setShowMenu(prev => !prev)} aria-label="Menu">
+            <IoEllipsisVertical />
+          </button>
+          {showMenu && (
+            <button
+              className="navbar-popup-button"
+              onClick={handleLogout}
+              style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                backgroundColor: '#fff',
+                border: '1px solid #ccc',
+                padding: '12px 16px',
+                marginTop: '4px',
+                zIndex: 100,
+                borderRadius: '4px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                display:'flex',
+                justifyContent:'center',
+                alignItems:'center',
+                width:'120px',
+              }}
+            >
+              <IoLogOutOutline size={22} style={{ marginRight: '6px' }} /> <span style={{fontSize:'1.1rem'}}>Logout</span>
+            </button>
+          )}
+        </div>
       );
     }
   } else if (location.pathname === '/new-note' || location.pathname.startsWith('/edit-note')) {
