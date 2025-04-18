@@ -239,7 +239,6 @@ button {
   flex: 1;
   overflow: hidden;
 } */
-
 .editor-container {
   position: relative;
   width: 100%;
@@ -247,7 +246,7 @@ button {
   background-color: #121212;
 }
 
-/* Both layers stack on top of each other */
+/* Shared styles */
 .editor,
 .overlay {
   position: absolute;
@@ -261,8 +260,7 @@ button {
   word-wrap: break-word;
 }
 
-/* The editor is transparent so that only the overlay text is visible,
-   but its caret is visible (using caret-color) */
+/* Editable layer: invisible text, visible caret */
 .editor {
   background: transparent;
   color: transparent;
@@ -271,16 +269,21 @@ button {
   outline: none;
 }
 
-/* The overlay is non-interactive so that clicks and typing go to the editor */
+/* Visual layer: visible styled text */
 .overlay {
   z-index: 1;
-  pointer-events: none;
+  pointer-events: none; /* This allows typing below */
   color: white;
 }
 
-/* Apply blur effect for complete words */
+/* Blurred words */
 .blurred {
+  display: inline-block; /* 👈 Required for reliable hover area */
   filter: blur(4px);
   transition: filter 0.2s ease-in-out;
+  pointer-events: auto;
 }
 
+.blurred:hover {
+  filter: none;
+}

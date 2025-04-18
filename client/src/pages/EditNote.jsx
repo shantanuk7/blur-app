@@ -1,17 +1,18 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import API from '../api';
 import Navbar from '../components/Navbar';
+import TextEditor from '../components/TextEditor';
 
 const EditNote = () => {
   const { id } = useParams();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const navigate = useNavigate();
-  const textareaRef = useRef(null);
   const token = localStorage.getItem('token');
-
-  // Fetch existing note
+  const [blurEnabled, setBlurEnabled] = useState(true);
+  const toggleBlur = () => setBlurEnabled((prev) => !prev);
+  
   useEffect(() => {
     const fetchNote = async () => {
       try {
@@ -33,12 +34,10 @@ const EditNote = () => {
     }
   }, [id, navigate, token]);
 
-  // Save the updated note
   const saveNote = async () => {
-    // Allow saving even if only title or content exists, but not neither
     if (!title.trim() && !content.trim()) {
-        alert('Note cannot be empty.');
-        return;
+      alert('Note cannot be empty.');
+      return;
     }
     try {
       await API.put(
@@ -53,25 +52,24 @@ const EditNote = () => {
     }
   };
 
-  // Navigate back to the view page
   const handleBack = () => {
     navigate(`/view-note/${id}`);
   };
 
-  // Basic loading state
-  // A more robust check might be needed if empty notes are valid
   const isLoading = title === '' && content === '';
-
 
   return (
     <>
-      {/* Navbar configured for edit screen */}
-      <Navbar onSave={saveNote} onBack={handleBack} />
+      <Navbar
+        onSave={saveNote}
+        onBack={handleBack}
+        blurEnabled={blurEnabled}
+        toggleBlur={toggleBlur}
+      />
 
-      {/* Use the new wrapper class for flex layout */}
       <div className="note-editor-wrapper">
         {isLoading ? (
-           <p>Loading note...</p>
+          <p>Loading note...</p>
         ) : (
           <>
             <input
@@ -79,14 +77,13 @@ const EditNote = () => {
               placeholder="Title"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="note-title-input" // Apply new class
+              className="note-title-input"
             />
-            <textarea
-              placeholder="Edit your note..."
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              ref={textareaRef}
-              className="note-content-textarea" // Apply new class
+            <TextEditor
+              content={content}
+              setContent={setContent}
+              blurEnabled={blurEnabled}
+              toggleBlur={toggleBlur}
             />
           </>
         )}
