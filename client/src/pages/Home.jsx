@@ -1,90 +1,96 @@
+// src/pages/Home.jsx
 import React, { useEffect, useState } from 'react';
 import API from '../api';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { IoAdd, IoDocumentTextOutline } from 'react-icons/io5';
+
+// Helper function to format dates
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString(undefined, {
+    year: 'numeric', month: 'short', day: 'numeric'
+  });
+};
 
 const Home = () => {
   const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
-    // ... (fetch logic remains the same)
+    const token = localStorage.getItem('token');
     if (!token) {
-        navigate('/login');
-        return;
+      navigate('/login');
+      return;
     }
     const fetchNotes = async () => {
       try {
         const res = await API.get('/notes', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setNotes(res.data);
+        // Sort notes by most recently updated
+        const sortedNotes = res.data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        setNotes(sortedNotes);
       } catch (err) {
         console.error(err);
-        // Clearing token and redirecting to login page if token expired.
-        localStorage.removeItem('token');
-        navigate('/login');
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/login');
+        }
+      } finally {
+        setLoading(false);
       }
     };
     fetchNotes();
-  }, [navigate, token]);
+  }, [navigate]);
 
-  const truncate = (text, limit = 50) => {
+  const truncate = (text, limit = 100) => {
     return text.length <= limit ? text : text.slice(0, limit) + '...';
   };
 
   return (
-    // Parent element structure managed by #root flexbox
     <>
-      <Navbar /> {/* Navbar remains outside the scrollable area */}
-
-      {/* This div takes up remaining space and scrolls */}
+      <Navbar />
       <div className="content-wrapper">
-        {/* Optional: Use .container inside if needed for max-width, etc. */}
-        {/* <div className="container"> */}
-          {notes.length === 0 ? (
-            <p style={{ textAlign: 'center', marginTop: '20px' }}>
-                No notes yet. Press the + button to add one!
-            </p>
-          ) : (
-            notes.map(note => (
+        {loading ? (
+          <p>Loading...</p>
+        ) : notes.length === 0 ? (
+          <div className="empty-notes-view">
+            <IoDocumentTextOutline />
+            <h3>No Notes Yet</h3>
+            <p>Tap the + button to create your first note.</p>
+          </div>
+        ) : (
+          <div className="notes-grid">
+            {notes.map(note => (
               <div
                 key={note._id}
-                style={styles.noteCard} // Use inline styles or move to CSS
+                className="note-card"
                 onClick={() => navigate(`/view-note/${note._id}`)}
               >
-                <h3>{note.title}</h3>
-                <p>{truncate(note.content)}</p>
+                <div>
+                  <h3>{note.title || 'Untitled Note'}</h3>
+                  <p>{truncate(note.content)}</p>
+                </div>
+                <div className="note-card-footer">
+                  {formatDate(note.updatedAt)}
+                </div>
               </div>
-            ))
-          )}
-        {/* </div> */} {/* Optional end .container */}
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Floating "+" button remains outside content-wrapper, positioned relative to viewport */}
       <button
         onClick={() => navigate('/new-note')}
-        className="fab" // Use class for styling
+        className="fab"
         aria-label="Create New Note"
       >
-        +
+        <IoAdd />
       </button>
     </>
   );
 };
-
-const styles = {
-  noteCard: {
-    border: '1px solid var(--border-color)', // Use variable
-    borderRadius: '4px',
-    padding: '10px 15px',
-    marginBottom: '10px',
-    cursor: 'pointer',
-    backgroundColor: 'var(--button-bg-color)', // Example background
-    transition: 'background-color 0.2s ease',
-  },
-};
-
 
 export default Home;

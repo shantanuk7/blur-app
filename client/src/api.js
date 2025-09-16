@@ -1,8 +1,21 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://blur-api-ruby.vercel.app/api'
-  // baseURL: 'http://localhost:5000/api'
+  baseURL: `${import.meta.env.VITE_BASE_URL}/api`
 });
+
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Check if the error is for an expired/invalid token
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      // Remove the token from local storage
+      localStorage.removeItem('token'); 
+      // Redirect to the login page
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default API;

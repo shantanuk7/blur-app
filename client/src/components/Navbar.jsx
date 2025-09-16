@@ -1,107 +1,74 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  IoArrowBackOutline,
-  IoSaveOutline,
-  IoTrashOutline,
-  IoEllipsisVertical,
-  IoLogOutOutline,
-  IoEyeOutline,
-  IoEyeOffOutline
+  IoArrowBackOutline, IoSaveOutline, IoTrashOutline, IoEllipsisVertical,
+  IoLogOutOutline, IoEyeOutline, IoEyeOffOutline
 } from 'react-icons/io5';
 
 const Navbar = ({ onSave, onBack, onDelete, blurEnabled, toggleBlur }) => {
   const navigate = useNavigate();
   const location = useLocation();
-
   const [showMenu, setShowMenu] = useState(false);
-
-  const token = localStorage.getItem('token');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
 
-  let leftContent = null;
-  let centerContent = null;
-  let rightContent = null;
+  const isEditorPage = location.pathname.startsWith('/edit-note'); // Only for existing notes
+  const isViewPage = location.pathname.startsWith('/view-note');
+  const isHomePage = location.pathname === '/';
+  const isNewNotePage = location.pathname === '/new-note';
 
-  if (location.pathname === '/') {
-    leftContent = <div className="navbar-title">Blur</div>;
-    if (token) {
-      rightContent = (
-        <div style={{ position: 'relative' }}>
-          <button className="navbar-icon-button" onClick={() => setShowMenu(prev => !prev)} aria-label="Menu">
-            <IoEllipsisVertical />
-          </button>
-          {showMenu && (
-            <button
-              className="navbar-popup-button"
-              onClick={handleLogout}
-              style={{
-                position: 'absolute',
-                top: '100%',
-                right: 0,
-                backgroundColor: '#fff',
-                border: '1px solid #ccc',
-                padding: '12px 16px',
-                marginTop: '4px',
-                zIndex: 100,
-                borderRadius: '4px',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-                display:'flex',
-                justifyContent:'center',
-                alignItems:'center',
-                width:'120px',
-              }}
-            >
-              <IoLogOutOutline size={22} style={{ marginRight: '6px' }} /> <span style={{fontSize:'1.1rem'}}>Logout</span>
+  // **THE FIX**: Logic to determine if the menu button should render at all
+  const shouldRenderMenu = isHomePage || isViewPage || isEditorPage;
+
+  const renderMenu = () => (
+    <div className="navbar-menu-container">
+      <button className="navbar-icon-button" onClick={() => setShowMenu(prev => !prev)} aria-label="Menu">
+        <IoEllipsisVertical />
+      </button>
+      {showMenu && (
+        <div className="navbar-menu">
+          {isHomePage && (
+            <button className="navbar-menu-item" onClick={handleLogout}>
+              <IoLogOutOutline /> Logout
+            </button>
+          )}
+          {(isViewPage || isEditorPage) && onDelete && (
+            <button className="navbar-menu-item delete" onClick={() => { onDelete(); setShowMenu(false); }}>
+              <IoTrashOutline /> Delete Note
             </button>
           )}
         </div>
-      );
-    }
-  } else if (location.pathname === '/new-note' || location.pathname.startsWith('/edit-note')) {
-    leftContent = (
-      <button className="navbar-icon-button" onClick={onBack} aria-label="Back">
-        <IoArrowBackOutline />
-      </button>
-    );
-    rightContent = (
-      <>
-        <button className="navbar-icon-button" onClick={toggleBlur} aria-label="Toggle Blur">
-          {blurEnabled ? <IoEyeOffOutline /> : <IoEyeOutline />}
-        </button>
-        <button className="navbar-icon-button" onClick={onSave} aria-label="Save Note">
-          <IoSaveOutline />
-        </button>
-      </>
-    );
-  } else if (location.pathname.startsWith('/view-note')) {
-    leftContent = (
-      <button className="navbar-icon-button" onClick={onBack} aria-label="Back">
-        <IoArrowBackOutline />
-      </button>
-    );
-    rightContent = (
-      <button className="navbar-icon-button" onClick={onDelete} aria-label="Delete Note">
-        <IoTrashOutline />
-      </button>
-    );
-  } else if (token) {
-    rightContent = (
-      <button className="navbar-text-button" onClick={handleLogout}>Logout</button>
-    );
-  } else {
-    centerContent = <div className="navbar-title">Blur</div>;
-  }
+      )}
+    </div>
+  );
 
   return (
     <nav className="navbar">
-      <div>{leftContent}</div>
-      <div className="navbar-spacer">{centerContent}</div>
-      <div style={{ minWidth: '10px', display: 'flex', justifyContent: 'flex-end' }}>{rightContent}</div>
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
+        {(isNewNotePage || isEditorPage || isViewPage) && (
+          <button className="navbar-icon-button" onClick={onBack} aria-label="Back">
+            <IoArrowBackOutline />
+          </button>
+        )}
+        {isHomePage && <div className="navbar-title">Blur</div>}
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+        {(isNewNotePage || isEditorPage) && (
+          <>
+            <button className="navbar-icon-button" onClick={toggleBlur} aria-label="Toggle Blur">
+              {blurEnabled ? <IoEyeOffOutline /> : <IoEyeOutline />}
+            </button>
+            <button className="navbar-icon-button" onClick={onSave} aria-label="Save Note">
+              <IoSaveOutline />
+            </button>
+          </>
+        )}
+        {shouldRenderMenu && renderMenu()}
+      </div>
     </nav>
   );
 };

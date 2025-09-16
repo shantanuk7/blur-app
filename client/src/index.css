@@ -1,14 +1,13 @@
-/* index.css */
-
-/* --- Keep Variables and Global Styles the Same --- */
+/* src/index.css */
 :root {
   --background-color: #121212;
-  --text-color: #ffffff;
-  --border-color: #ececec;
-  --input-bg-color: transparent;
-  --button-bg-color: transparent;
-  --button-hover-bg-color: #555;
-  --icon-color: var(--text-color);
+  --card-bg-color: #1E1E1E;
+  --text-color: #EAEAEA;
+  --text-secondary-color: #A0A0A0;
+  --border-color: #333333;
+  --primary-accent-color: #007AFF;
+  --danger-color: #FF3B30;
+  --icon-color: #EAEAEA;
 }
 
 *, *::before, *::after {
@@ -17,89 +16,210 @@
 }
 
 html, body {
-  height: 100%; /* Crucial for 100vh below */
+  height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Prevent body scrolling */
+  overflow: hidden;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-               Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
 }
 
-/* --- Scrollbar styling remains the same --- */
-body::-webkit-scrollbar { width: 8px; }
-body::-webkit-scrollbar-track { background: var(--background-color); }
-body::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; }
-
-/* --- **UPDATED** Root container --- */
 #root {
-  display: flex; /* Use Flexbox */
-  flex-direction: column; /* Stack children vertically */
-  height: 100vh; /* Make root take full viewport height */
-  overflow: hidden; /* Prevent root itself from scrolling */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* --- **NEW** Content Wrapper --- */
+/* --- Scrollable Content Area --- */
 .content-wrapper {
-  flex-grow: 1; /* Allow this area to grow and fill available space */
-  overflow-y: auto; /* Enable vertical scrolling ONLY within this container */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
-  padding: 15px; /* Apply padding to the scrollable area */
-  /* min-height: 0; /* Important fix for flexbox overflow calculations in some cases */
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 16px;
 }
 
-/* --- **UPDATED** Container (Simpler) --- */
-/* This class might just be for semantic structure or max-width now */
-/* Remove padding, flex-grow, and overflow-y from here */
-.container {
-  width: 100%;
+/* --- Note Dashboard / Home Page --- */
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.note-card {
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.note-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.note-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.note-card p {
+  margin: 0;
+  color: var(--text-secondary-color);
+  flex-grow: 1;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.note-card-footer {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  color: var(--text-secondary-color);
+  opacity: 0.7;
+}
+
+.empty-notes-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 70vh;
+  color: var(--text-secondary-color);
+  text-align: center;
+}
+
+.empty-notes-view svg {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+/* --- Note View & Editor Pages --- */
+.note-view-container, .note-editor-wrapper {
+  max-width: 800px;
   margin: 0 auto;
-  /* max-width: 800px; /* Optional: Add max-width if needed on wider screens */
+  /* UPDATED: More generous padding for better spacing */
+  padding: 16px 24px; 
+  display: flex; /* ADDED: Use flexbox to manage layout */
+  flex-direction: column; /* ADDED: Stack title and editor vertically */
+  flex-grow: 1; /* ADDED: Ensure it fills the available space */
 }
 
-/* --- Input, Textarea, Button, Navbar styles remain largely the same --- */
-/* ... (keep existing styles for input, textarea, button) ... */
+.note-view-container h2, .note-title-input {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
 
-/* Minor fix for general button padding if needed */
-button {
-  display: block;
+.note-metadata {
+  color: var(--text-secondary-color);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.note-content-view p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.note-title-input {
+  background: transparent;
+  border: none;
+  outline: none;
   width: 100%;
-  padding: 12px 15px; /* Re-add padding if it was removed */
-  margin-bottom: 15px;
-  /* ... rest of button styles */
+  color: var(--text-color);
+  font-family: inherit;
+  padding: 0;
+  margin-bottom: 20px; 
 }
 
+/* --- Text Editor --- */
+.editor-container {
+  position: relative;
+  width: 100%;
+  flex-grow: 1; /* Allow editor to fill vertical space */
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.editor, .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  padding: inherit;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.editor {
+  background: transparent;
+  color: transparent;
+  caret-color: var(--primary-accent-color);
+  z-index: 2;
+  outline: none;
+  resize: none;
+}
+
+.editor:empty::before {
+  content: 'Start typing your note...';
+  color: var(--text-secondary-color);
+  opacity: 0.6;
+  position: absolute;
+  pointer-events: none; /* Allows clicking through to the editor */
+}
+
+.overlay {
+  z-index: 1;
+  pointer-events: none;
+  color: var(--text-color);
+}
+
+.overlay span {
+  transition: filter 0.2s ease-in-out;
+  pointer-events: auto; /* Allow clicks on spans */
+}
+
+.blurred {
+  filter: blur(5px);
+}
+
+.revealed {
+  filter: none !important;
+}
+
+/* --- Navbar & FAB (Mostly the Same, with tweaks) --- */
 .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 15px; /* Adjusted padding slightly */
+  padding: 0 16px;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--background-color);
-  flex-shrink: 0; /* Prevent Navbar from shrinking */
-  height: 56px; /* Keep fixed height */
-  width: 100%; /* Ensure it spans full width */
+  flex-shrink: 0;
+  height: 56px;
 }
 
 .navbar-title {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: bold;
-  color: var(--text-color);
-}
-
-.navbar-spacer {
-  flex: 1; /* Takes up space in the middle */
-  /* Remove text-align: center; if title is not placed here */
 }
 
 .navbar-icon-button {
@@ -107,44 +227,21 @@ button {
   border: none;
   color: var(--icon-color);
   cursor: pointer;
-  font-size: 1.6rem;
-  line-height: 1;
-  padding: 8px; /* Add padding back for easier tapping */
-  margin: 0; /* Remove default margins if any */
-  margin-bottom: 0;
+  font-size: 1.5rem;
+  padding: 8px;
   border-radius: 50%;
-  transition: background-color 0.2s ease;
-  display: inline-flex; /* Helps center icon */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px; /* Fixed width for consistent spacing */
-  height: 40px; /* Fixed height */
+  width: 40px;
+  height: 40px;
+  transition: background-color 0.2s ease;
 }
 
 .navbar-icon-button:active {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.navbar-text-button {
-  background: none;
-  border: none;
-  color: var(--text-color);
-  font-size: 1rem;
-  font-weight: normal;
-  padding: 8px 12px;
-  margin: 0 5px;
-  cursor: pointer;
-  width: auto;
-  margin-bottom: 0;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-}
-
-.navbar-text-button:active {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* --- FAB Styling (keep as is, position:fixed works relative to viewport) --- */
 .fab {
   position: fixed;
   display: flex;
@@ -152,138 +249,83 @@ button {
   align-items: center;
   bottom: 20px;
   right: 20px;
-  width: 56px; /* Slightly larger standard FAB size */
+  width: 56px;
   height: 56px;
   border-radius: 50%;
   border: none;
-  background-color: #ffffff; /* White background */
-  color: #121212; /* Dark icon/text */
-  font-size: 28px; /* Adjust size */
-  line-height: 1; /* Remove extra line height */
+  background-color: #ffffff; 
+  color: #121212; 
+  font-size: 28px;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add shadow */
-  z-index: 1000; /* Ensure it's above other content */
-  /* Remove text-align if using flex */
-  /* Remove general button width/margin overrides if defined inline */
-  margin-bottom: 0;
-  font-weight: normal;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  transition: transform 0.2s ease;
 }
 
-/* Apply flex column layout specifically to the content wrapper on editor pages */
-.note-editor-wrapper {
-  display: flex;
-  flex-direction: column;
-  /* Inherit base content-wrapper styles if needed, or define explicitly */
-  flex-grow: 1;
-  overflow-y: auto; /* Allows scrolling if content exceeds viewport */
-  overflow-x: hidden;
-  padding: 20px 25px; /* Increase padding for more breathing room */
+.fab:active {
+  transform: scale(0.95);
 }
 
-/* Style for the Title Input in New/Edit Note */
-.note-title-input {
-  background-color: transparent; /* Blend with page background */
-  border: none; /* Remove border */
-  outline: none; /* Remove default focus outline */
-  box-shadow: none; /* Remove custom focus shadow */
-
-  font-size: 1.9rem; /* Larger font size for title */
-  font-weight: 600; /* Bolder title */
-  color: var(--text-color); /* White text */
-  width: 100%;
-  padding: 10px 0; /* Minimal vertical padding, no horizontal */
-  margin-bottom: 15px; /* Space below title */
-  font-family: inherit; /* Ensure font consistency */
-  line-height: 1.3; /* Adjust line height for larger font */
-}
-.note-title-input::placeholder {
-   color: #888; /* Dimmer placeholder */
-   font-weight: 500; /* Slightly lighter placeholder */
-   opacity: 0.8;
-}
-
-/* Style for the Content Textarea in New/Edit Note */
-.note-content-textarea {
-  background-color: transparent; /* Blend with page background */
-  border: none; /* Remove border */
-  outline: none; /* Remove default focus outline */
-  box-shadow: none; /* Remove custom focus shadow */
-
-  font-size: 1.1rem; /* Comfortable reading size */
-  line-height: 1.7; /* Increase line spacing for readability */
-  color: var(--text-color); /* White text */
-  width: 100%;
-  padding: 5px 0; /* Minimal vertical padding */
-  margin-bottom: 0; /* Remove default margin */
-  font-family: inherit;
-  resize: none; /* Disable manual resizing by user */
-
-  flex-grow: 1; /* **Crucial**: Allow textarea to fill remaining vertical space */
-  min-height: 300px; /* Ensure a generous minimum height */
-  /* The combination of flex-grow and min-height works well */
-}
-.note-content-textarea::placeholder {
-   color: #888; /* Dimmer placeholder */
-   opacity: 0.8;
-}
-
-.note-editor-wrapper {
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  height: calc(100vh - 60px); /* Adjust based on Navbar height */
-}
-
-/* .editor-container {
+/* Dropdown Menu for Navbar */
+.navbar-menu-container {
   position: relative;
-  flex: 1;
-  overflow: hidden;
-} */
-.editor-container {
-  position: relative;
-  width: 100%;
-  height: calc(100vh - 60px);
-  background-color: #121212;
 }
 
-/* Shared styles */
-.editor,
-.overlay {
+.navbar-menu {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 100;
+  overflow: hidden;
+  width: 180px;
+}
+
+.navbar-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: var(--text-color);
   width: 100%;
-  min-height: 100%;
+  text-align: left;
   font-size: 1rem;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  cursor: pointer;
 }
 
-/* Editable layer: invisible text, visible caret */
-.editor {
-  background: transparent;
-  color: transparent;
-  caret-color: white;
-  z-index: 2;
-  outline: none;
+.navbar-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Visual layer: visible styled text */
-.overlay {
-  z-index: 1;
-  pointer-events: none; /* This allows typing below */
+.navbar-menu-item.delete {
+  color: var(--danger-color);
+}
+
+.navbar-menu-item svg {
+  margin-right: 12px;
+  font-size: 1.2rem;
+}
+
+.toolbar-button {
+  cursor: pointer;
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary-color);
+  padding: 6px;
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.toolbar-button.active {
+  background: var(--primary-accent-color);
   color: white;
-}
-
-/* Blurred words */
-.blurred {
-  display: inline-block; /* 👈 Required for reliable hover area */
-  filter: blur(4px);
-  transition: filter 0.2s ease-in-out;
-  pointer-events: auto;
-}
-
-.blurred:hover {
-  filter: none;
 }
