@@ -34,7 +34,7 @@ const TextEditor = ({
     let currentActive = null;
 
     tokens.forEach((token) => {
-      if (!/\s+/.test(token)) {
+      if (!/\s+/.test(token) && token.length > 0) {
         const start = charCount;
         const end = charCount + token.length;
         if (caretOffset >= start && caretOffset <= end) {
@@ -59,18 +59,19 @@ const TextEditor = ({
     let wordCounter = 0;
   
     return tokens.map((token, index) => {
-      if (/\s+/.test(token)) return token;
-  
+      if (/\s+/.test(token)) return <span key={`space-${index}`}>{token}</span>;
+      if (token.length === 0) return null;
+
       const nextToken = tokens[index + 1];
       const isComplete =
-      (nextToken && (/^\s+$/.test(nextToken) || nextToken.includes('\n'))) ||
-      content.endsWith(' ') || content.endsWith('\n');
+        (nextToken && /^\s+$/.test(nextToken)) ||
+        index === tokens.length - 1;
         
       const shouldBlur = blurEnabled && isComplete && wordCounter !== activeWordIndex;
   
       const element = (
         <span key={wordCounter} className={shouldBlur ? 'blurred' : ''}>
-        {token}
+          {token}
         </span>
       );
   
@@ -78,9 +79,6 @@ const TextEditor = ({
       return element;
     });
   };
-  
-  
-  
 
   const syncScroll = () => {
     if (editableRef.current && overlayRef.current) {
@@ -102,7 +100,12 @@ const TextEditor = ({
   }, []);
 
   const handleSelectionChange = useCallback(() => {
-    updateActiveWord(content);
+    const selection = window.getSelection();
+    if (editableRef.current && selection.focusNode && editableRef.current.contains(selection.focusNode)) {
+        updateActiveWord(content);
+    } else {
+        setActiveWordIndex(null);
+    }
   }, [content]);
 
   useEffect(() => {
@@ -121,9 +124,9 @@ const TextEditor = ({
   useEffect(() => {
     if (editableRef.current && editableRef.current.innerText !== content) {
       editableRef.current.innerText = content;
-      setCaretToEnd(); // Set cursor after content is inserted
+      setCaretToEnd();
     }
-  }, [content]);  
+  }, [content]); 
 
   const setCaretToEnd = () => {
     const el = editableRef.current;
@@ -131,12 +134,11 @@ const TextEditor = ({
     const range = document.createRange();
     const sel = window.getSelection();
     range.selectNodeContents(el);
-    range.collapse(false); // Move to end
+    range.collapse(false);
     sel.removeAllRanges();
     sel.addRange(range);
   };
   
-
   return (
     <div className="editor-container">
       <div className="overlay" ref={overlayRef}>
