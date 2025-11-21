@@ -17,11 +17,11 @@ pipeline {
 
     stage('Build Images') {
       steps {
-        script {
-          sh """
-            docker compose -f ${COMPOSE_FILE} build --no-cache
-          """
-        }
+        sh '''
+          export DOCKER_BUILDKIT=0
+          docker build -t blur-client ./client
+          docker build -t blur-server ./server
+        '''
       }
     }
 
