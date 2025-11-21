@@ -1,22 +1,42 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react";
 
-const TextEditor = ({
-  content,
-  setContent,
-  blurEnabled,
-  toggleBlur
-}) => {
-  const [activeWordIndex, setActiveWordIndex] = useState(null);
+const TextEditor = ({ content, setContent, blurEnabled }) => {
   const editableRef = useRef(null);
   const overlayRef = useRef(null);
+  const rafRef = useRef(null);
+  
+  // We track the active word index to know which one to reveal
+  const [activeWordIndex, setActiveWordIndex] = useState(null);
 
-  const tokenize = (txt) => txt.split(/([\s\n]+)/);
+  // Helper: Normalize newlines to avoid innerText/React drift
+  const normalizeText = (text) => {
+    return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  };
 
-  const getCaretCharacterOffsetWithin = (element) => {
+  // 1. Build word ranges. 
+  // A "word" is any sequence of non-whitespace characters.
+  const buildWordRanges = useCallback((rawText = "") => {
+    const text = normalizeText(rawText);
+    const ranges = [];
+    const re = /\S+/g;
+    let match;
+    
+    while ((match = re.exec(text)) !== null) {
+      ranges.push({
+        start: match.index,
+        end: match.index + match[0].length,
+        text: match[0]
+      });
+    }
+    return ranges;
+  }, []);
+
+  // 2. Get precise caret offset
+  const getCaretOffset = (element) => {
     let caretOffset = 0;
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
+    const sel = window.getSelection();
+    if (sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
       const preCaretRange = range.cloneRange();
       preCaretRange.selectNodeContents(element);
       preCaretRange.setEnd(range.endContainer, range.endOffset);
@@ -25,133 +45,139 @@ const TextEditor = ({
     return caretOffset;
   };
 
-  const updateActiveWord = (currentText) => {
-    if (!editableRef.current) return;
-    const caretOffset = getCaretCharacterOffsetWithin(editableRef.current);
-    const tokens = tokenize(currentText);
-    let charCount = 0;
-    let wordCounter = 0;
-    let currentActive = null;
+  // 3. Core Logic: Determine which word is active
+  const computeActiveWord = useCallback(() => {
+    const el = editableRef.current;
+    if (!el) return;
 
-    tokens.forEach((token) => {
-      if (!/\s+/.test(token) && token.length > 0) {
-        const start = charCount;
-        const end = charCount + token.length;
-        if (caretOffset >= start && caretOffset <= end) {
-          currentActive = wordCounter;
-        }
-        wordCounter++;
+    // If editor isn't focused, blur everything (optional preference)
+    if (document.activeElement !== el) {
+      setActiveWordIndex(null);
+      return;
+    }
+
+    const text = normalizeText(el.innerText);
+    const caret = getCaretOffset(el);
+    const ranges = buildWordRanges(text);
+
+    let activeIdx = null;
+
+    for (let i = 0; i < ranges.length; i++) {
+      const r = ranges[i];
+      // LOGIC: A word is active if the caret is anywhere inside it, 
+      // OR at the immediate edges (start or end).
+      // Example: Word is indices 0-5. 
+      // Caret at 0, 1, 2, 3, 4, 5 -> Active. 
+      // Caret at 6 (after space) -> Inactive.
+      if (caret >= r.start && caret <= r.end) {
+        activeIdx = i;
+        break;
       }
-      charCount += token.length;
-    });
+    }
+    setActiveWordIndex(activeIdx);
+  }, [buildWordRanges]);
 
-    setActiveWordIndex(currentActive);
+  const scheduleCompute = useCallback(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(computeActiveWord);
+  }, [computeActiveWord]);
+
+  // 4. Input Handler
+  const handleInput = (e) => {
+    const text = e.currentTarget.innerText;
+    setContent(text); // Update parent state
+    scheduleCompute();
   };
 
-  const handleInput = () => {
-    const newText = editableRef.current.innerText;
-    setContent(newText);
-    updateActiveWord(newText);
-  };
-
-  const renderOverlay = () => {
-    const tokens = tokenize(content);
-    let wordCounter = 0;
-  
-    return tokens.map((token, index) => {
-      if (/\s+/.test(token)) return <span key={`space-${index}`}>{token}</span>;
-      if (token.length === 0) return null;
-
-      const nextToken = tokens[index + 1];
-      const isComplete =
-        (nextToken && /^\s+$/.test(nextToken)) ||
-        index === tokens.length - 1;
-        
-      const shouldBlur = blurEnabled && isComplete && wordCounter !== activeWordIndex;
-  
-      const element = (
-        <span key={wordCounter} className={shouldBlur ? 'blurred' : ''}>
-          {token}
-        </span>
-      );
-  
-      wordCounter++;
-      return element;
-    });
-  };
-
+  // 5. Sync Scrolling (Crucial for alignment)
   const syncScroll = () => {
     if (editableRef.current && overlayRef.current) {
       overlayRef.current.scrollTop = editableRef.current.scrollTop;
-      overlayRef.current.scrollLeft = editableRef.current.scrollLeft;
     }
   };
 
-  useEffect(() => {
-    const currentEditable = editableRef.current;
-    if (currentEditable) {
-      currentEditable.addEventListener('scroll', syncScroll);
-    }
-    return () => {
-      if (currentEditable) {
-        currentEditable.removeEventListener('scroll', syncScroll);
-      }
-    };
-  }, []);
+  // 6. Render the Overlay
+  // We reconstruct the text exactly, applying classes to words
+  const renderOverlay = () => {
+    const text = normalizeText(content);
+    const ranges = buildWordRanges(text);
+    const elements = [];
+    let lastIndex = 0;
 
-  const handleSelectionChange = useCallback(() => {
-    const selection = window.getSelection();
-    if (editableRef.current && selection.focusNode && editableRef.current.contains(selection.focusNode)) {
-        updateActiveWord(content);
-    } else {
-        setActiveWordIndex(null);
+    ranges.forEach((r, idx) => {
+      // Push the whitespace/separators before the word
+      const separator = text.slice(lastIndex, r.start);
+      if (separator) {
+        elements.push(<span key={`sep-${idx}`}>{separator}</span>);
+      }
+
+      // Determine if this specific word is revealed
+      // It is revealed if: Blur is disabled OR It is the active word
+      const isActive = idx === activeWordIndex;
+      const isRevealed = !blurEnabled || isActive;
+
+      elements.push(
+        <span 
+          key={`word-${idx}`} 
+          className={isRevealed ? "revealed" : "blurred"}
+        >
+          {r.text}
+        </span>
+      );
+
+      lastIndex = r.end;
+    });
+
+    // Push remaining trailing text (spaces/newlines at end of file)
+    const tail = text.slice(lastIndex);
+    if (tail) {
+      elements.push(<span key="tail">{tail}</span>);
+    }
+
+    return elements;
+  };
+
+  // --- Effects ---
+
+  // Sync selection changes (arrow keys, clicks)
+  useEffect(() => {
+    document.addEventListener("selectionchange", scheduleCompute);
+    return () => document.removeEventListener("selectionchange", scheduleCompute);
+  }, [scheduleCompute]);
+
+  // Keep DOM valid when content changes externally
+  useLayoutEffect(() => {
+    if (editableRef.current && editableRef.current.innerText !== content) {
+      // Only update if strictly necessary to avoid resetting caret
+      if (document.activeElement !== editableRef.current) {
+        editableRef.current.innerText = content;
+      }
     }
   }, [content]);
 
-  useEffect(() => {
-    document.addEventListener('selectionchange', handleSelectionChange);
-    return () => {
-      document.removeEventListener('selectionchange', handleSelectionChange);
-    };
-  }, [handleSelectionChange]);
-
-  useEffect(() => {
-    if (editableRef.current) {
-      editableRef.current.focus();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (editableRef.current && editableRef.current.innerText !== content) {
-      editableRef.current.innerText = content;
-      setCaretToEnd();
-    }
-  }, [content]); 
-
-  const setCaretToEnd = () => {
-    const el = editableRef.current;
-    if (!el) return;
-    const range = document.createRange();
-    const sel = window.getSelection();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    sel.removeAllRanges();
-    sel.addRange(range);
-  };
-  
   return (
     <div className="editor-container">
-      <div className="overlay" ref={overlayRef}>
+      {/* Overlay: Handles Visuals */}
+      <div 
+        className="editor-common overlay" 
+        ref={overlayRef} 
+        aria-hidden="true"
+      >
         {renderOverlay()}
       </div>
+
+      {/* Editor: Handles Input */}
       <div
-        className="editor"
+        className="editor-common editor"
         contentEditable
         ref={editableRef}
         onInput={handleInput}
+        onScroll={syncScroll}
+        onBlur={() => setActiveWordIndex(null)} // Blur current word when losing focus
+        onFocus={scheduleCompute} // Reveal word when gaining focus
         suppressContentEditableWarning={true}
         spellCheck={false}
-      ></div>
+      />
     </div>
   );
 };
