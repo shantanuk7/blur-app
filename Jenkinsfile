@@ -1,9 +1,12 @@
 pipeline {
   agent any
+
   environment {
     COMPOSE_FILE = 'docker-compose.yml'
   }
+
   stages {
+
     stage('Checkout') {
       steps {
         git url: 'https://github.com/shantanuk7/blur-app.git',
@@ -15,15 +18,14 @@ pipeline {
     stage('Build Images') {
       steps {
         script {
-          def SERVER_URL = "http://127.0.0.1:5000"
           sh """
-            docker compose -f ${COMPOSE_FILE} build --pull --no-cache
+            docker compose -f ${COMPOSE_FILE} build --no-cache
           """
         }
       }
     }
 
-    stage('Deploy (docker compose)') {
+    stage('Deploy Containers') {
       steps {
         sh """
           docker compose -f ${COMPOSE_FILE} down || true
@@ -32,9 +34,8 @@ pipeline {
       }
     }
 
-    stage('Post-Deploy Check') {
+    stage('Health Check') {
       steps {
-        sh 'docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"'
         sh 'sleep 5'
         sh 'curl -sS http://127.0.0.1:5000/api/auth || true'
       }
