@@ -4,7 +4,7 @@ services:
       context: ./server
       dockerfile: Dockerfile
     env_file:
-      - ./server/.env
+      - /home/ubuntu/prod_env_server.env
     restart: always
     ports:
       - "5000:5000"
@@ -14,7 +14,7 @@ services:
       context: ./client
       dockerfile: Dockerfile
       args:
-        VITE_BASE_URL: "http://<EC2_PUBLIC_IP>:5000"
+        VITE_BASE_URL: "http://13.233.70.197:5000"
     restart: always
     ports:
       - "80:80"
