@@ -6,7 +6,9 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git branch: 'main', url: 'https://github.com/<your-org-or-user>/<your-repo>.git'
+                git url: 'https://github.com/YOUR_USER/YOUR_REPO.git',
+                    branch: 'main',
+                    credentialsId: '997092da-5bee-45b2-b45b-7a5cf133832a'
       }
     }
     stage('Build Images') {
