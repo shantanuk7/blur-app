@@ -8,7 +8,6 @@ const mg = require("../config/mailer");
 const transporter = require('../config/mailer');
 
 const register = async (req, res) => {
-  // validation
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -25,7 +24,6 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create verification token valid for 1 day
     const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
     user = new User({
@@ -37,13 +35,27 @@ const register = async (req, res) => {
 
     await user.save();
 
-    // Construct verification email
+    // ✅ Build the full verification link
     const verificationLink = `${process.env.BASE_URL}/api/auth/verify-email?token=${verificationToken}`;
+
+    // ✅ Compose email with HTML
     const mailOptions = {
-      from: process.env.GMAIL_USER, // The sender address
-      to: email, // The receiver's email
+      from: process.env.GMAIL_USER,
+      to: email,
       subject: 'Email Verification',
-      text: `Please verify your email by clicking the link: ${verificationLink}`
+      text: `Please verify your email: ${verificationLink}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>Email Verification</h2>
+          <p>Hello ${name},</p>
+          <p>Thank you for registering. Please verify your email by clicking the link below:</p>
+          <a href="${verificationLink}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+            Verify Email
+          </a>
+          <p>If the button doesn't work, copy and paste this URL in your browser:</p>
+          <p>${verificationLink}</p>
+        </div>
+      `
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
