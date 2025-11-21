@@ -6,7 +6,7 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-                git url: 'https://github.com/YOUR_USER/YOUR_REPO.git',
+                git url: 'https://github.com/shantanuk7/blur-app.git',
                     branch: 'main',
                     credentialsId: '997092da-5bee-45b2-b45b-7a5cf133832a'
       }
