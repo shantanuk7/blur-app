@@ -7,14 +7,6 @@ pipeline {
 
   stages {
 
-    stage('Checkout') {
-      steps {
-        git branch: 'main',
-            url: 'https://github.com/shantanuk7/blur-app.git',
-            credentialsId: '997092da-5bee-45b2-b45b-7a5cf133832a'
-      }
-    }
-
     stage('Build Containers') {
       steps {
         sh """
@@ -41,11 +33,7 @@ pipeline {
   }
 
   post {
-    success {
-      echo "Deployment succeeded"
-    }
-    failure {
-      echo "Deployment failed"
-    }
+    success { echo "Deployment succeeded" }
+    failure { echo "Deployment failed" }
   }
 }
