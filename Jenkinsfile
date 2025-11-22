@@ -15,16 +15,6 @@ pipeline {
       }
     }
 
-    stage('Build Images') {
-      steps {
-        sh '''
-          export DOCKER_BUILDKIT=0
-          docker build -t blur-client ./client
-          docker build -t blur-server ./server
-        '''
-      }
-    }
-
     stage('Deploy Containers') {
       steps {
         sh """
@@ -39,6 +29,15 @@ pipeline {
         sh 'sleep 5'
         sh 'curl -sS http://127.0.0.1:5000/api/auth || true'
       }
+    }
+  }
+
+  post {
+    failure {
+      echo "Deployment failed."
+    }
+    success {
+      echo "Deployment succeeded."
     }
   }
 }
