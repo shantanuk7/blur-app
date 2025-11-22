@@ -9,16 +9,24 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        git url: 'https://github.com/shantanuk7/blur-app.git',
-            branch: 'main',
+        git branch: 'main',
+            url: 'https://github.com/shantanuk7/blur-app.git',
             credentialsId: '997092da-5bee-45b2-b45b-7a5cf133832a'
       }
     }
 
-    stage('Deploy Containers') {
+    stage('Build Containers') {
       steps {
         sh """
-          docker compose -f ${COMPOSE_FILE} down || true
+          docker compose -f ${COMPOSE_FILE} build --no-cache
+        """
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        sh """
+          docker compose -f ${COMPOSE_FILE} down
           docker compose -f ${COMPOSE_FILE} up -d --remove-orphans
         """
       }
@@ -26,18 +34,18 @@ pipeline {
 
     stage('Health Check') {
       steps {
-        sh 'sleep 5'
-        sh 'curl -sS http://127.0.0.1:5000/api/auth || true'
+        sh 'sleep 8'
+        sh 'curl -sSf http://127.0.0.1:5000/api/auth/health'
       }
     }
   }
 
   post {
-    failure {
-      echo "Deployment failed."
-    }
     success {
-      echo "Deployment succeeded."
+      echo "Deployment succeeded"
+    }
+    failure {
+      echo "Deployment failed"
     }
   }
 }
