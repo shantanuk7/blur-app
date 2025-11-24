@@ -138,23 +138,28 @@ spec:
           }
       }
 
-
         stage('Deploy to Kubernetes') {
-            steps {
-                container('kubectl') {
-                    dir('k8s-deployment') {
-                        sh '''
-                            kubectl apply -f server-deployment.yaml
-                            kubectl apply -f server-service.yaml
-                            kubectl apply -f client-deployment.yaml
-                            kubectl apply -f client-service.yaml
+          steps {
+              container('kubectl') {
+                  dir('k8s-deployment') {
+                      sh '''
+                          # Create namespace first (or skip if exists)
+                          kubectl apply -f namespace.yaml
 
-                            kubectl rollout status deployment/server -n 2401106
-                            kubectl rollout status deployment/client -n 2401106
-                        '''
-                    }
-                }
-            }
-        }
+                          # Apply deployments and services
+                          kubectl apply -f server-deployment.yaml
+                          kubectl apply -f server-service.yaml
+                          kubectl apply -f client-deployment.yaml
+                          kubectl apply -f client-service.yaml
+
+                          # Wait for pods to be ready
+                          kubectl rollout status deployment/server -n 2401106
+                          kubectl rollout status deployment/client -n 2401106
+                      '''
+                  }
+              }
+          }
+      }
+
     }
 }
