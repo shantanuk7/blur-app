@@ -10,6 +10,7 @@ spec:
     image: sonarsource/sonar-scanner-cli
     command: ["cat"]
     tty: true
+
   - name: kubectl
     image: bitnami/kubectl:latest
     command: ["cat"]
@@ -24,9 +25,10 @@ spec:
     - name: kubeconfig-secret
       mountPath: /kube/config
       subPath: kubeconfig
+
   - name: dind
     image: docker:dind
-    args: ["--registry-mirror=https://mirror.gcr.io", "--storage-driver=overlay2"]
+    args: ["--storage-driver=overlay2"]   # ← FIXED
     securityContext:
       privileged: true
     env:
@@ -36,13 +38,28 @@ spec:
     - name: docker-config
       mountPath: /etc/docker/daemon.json
       subPath: daemon.json
+    - name: workspace-volume
+      mountPath: /home/jenkins/agent
+
+  - name: jnlp
+    image: jenkins/inbound-agent:3309.v27b_9314fd1a_4-1
+    env:
+    - name: JENKINS_AGENT_WORKDIR
+      value: "/home/jenkins/agent"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: workspace-volume
+
   volumes:
+  - name: workspace-volume
+    emptyDir: {}
   - name: docker-config
     configMap:
       name: docker-daemon-config
   - name: kubeconfig-secret
     secret:
       secretName: kubeconfig-secret
+
 '''
         }
     }
