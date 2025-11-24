@@ -17,7 +17,7 @@ spec:
       - name: nexus-secret
       containers:
       - name: client
-        image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401106/client:latest
+        image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/client:latest
         ports:
         - containerPort: 80
         env:

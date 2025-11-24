@@ -17,17 +17,14 @@ spec:
       - name: nexus-secret
       containers:
       - name: server
-        image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401106/server:latest
+        image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/server:latest
         ports:
         - containerPort: 5000
         env:
-        # non-sensitive
         - name: PORT
           value: "5000"
         - name: BASE_URL
           value: "http://server-service.2401106.svc.cluster.local:5000"
-
-        # sensitive: loaded securely from Kubernetes secret
         - name: MONGO_URI
           valueFrom:
             secretKeyRef:
