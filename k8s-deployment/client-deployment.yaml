@@ -13,11 +13,13 @@ spec:
       labels:
         app: client
     spec:
+      imagePullSecrets:
+      - name: nexus-secret
       containers:
       - name: client
-        image: image: nexus.imcc.com/2401106/client:latest
+        image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401106/client:latest
         ports:
         - containerPort: 80
         env:
         - name: VITE_BASE_URL
-          value: "http://server-service:5000"
+          value: "http://server-service.2401106.svc.cluster.local:5000"

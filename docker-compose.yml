@@ -14,7 +14,7 @@ services:
       context: ./client
       dockerfile: Dockerfile
       args:
-        VITE_BASE_URL: "http://13.233.70.197:5000"
+        VITE_BASE_URL="http://server-service.2401106.svc.cluster.local:5000"
     restart: always
     ports:
       - "80:80"

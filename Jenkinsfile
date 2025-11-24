@@ -111,6 +111,34 @@ spec:
             }
         }
 
+        stage('Create Secrets if Not Exists') {
+          steps {
+              container('kubectl') {
+                  withCredentials([
+                      string(credentialsId: 'mongo-uri-2401106', variable: 'MONGO_URI'),
+                      string(credentialsId: 'jwt-secret-2401106', variable: 'JWT_SECRET'),
+                      string(credentialsId: 'gmail-user-2401106', variable: 'GMAIL_USER'),
+                      string(credentialsId: 'gmail-pass-2401106', variable: 'GMAIL_PASS')
+                  ]) {
+                      sh '''
+                          kubectl create secret docker-registry nexus-secret \
+                            --docker-server=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
+                            --docker-username=admin \
+                            --docker-password=Changeme@2025 \
+                            --namespace=2401106 || true
+
+                          kubectl create secret generic server-secret -n 2401106 \
+                            --from-literal=MONGO_URI="$MONGO_URI" \
+                            --from-literal=JWT_SECRET="$JWT_SECRET" \
+                            --from-literal=GMAIL_USER="$GMAIL_USER" \
+                            --from-literal=GMAIL_PASS="$GMAIL_PASS" || true
+                      '''
+                  }
+              }
+          }
+      }
+
+
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {

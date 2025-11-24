@@ -5,7 +5,7 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 # pass build arg for API base URL
-ARG VITE_BASE_URL=http://localhost:5000
+ARG VITE_BASE_URL="http://server-service.2401106.svc.cluster.local:5000"
 ENV VITE_BASE_URL=${VITE_BASE_URL}
 RUN npm run build
 
