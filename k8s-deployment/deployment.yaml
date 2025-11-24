@@ -1,3 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "2401106"
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -45,3 +50,54 @@ spec:
             secretKeyRef:
               name: server-secret
               key: GMAIL_PASS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server-service
+  namespace: "2401106"
+spec:
+  selector:
+    app: server
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  namespace: "2401106"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      imagePullSecrets:
+      - name: nexus-secret
+      containers:
+      - name: client
+        image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/client:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-service
+  namespace: "2401106"
+spec:
+  selector:
+    app: client
+  ports:
+    - protocol: TCP
+      port: 32000
+      targetPort: 80
+  type: NodePort

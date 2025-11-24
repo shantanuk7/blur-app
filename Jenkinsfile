@@ -139,13 +139,7 @@ spec:
                 container('kubectl') {
                     dir('k8s-deployment') {
                         sh '''
-                            # Apply all resources
-                            kubectl apply -f server-deployment.yaml
-                            kubectl apply -f server-service.yaml
-                            kubectl apply -f client-deployment.yaml
-                            kubectl apply -f client-service.yaml
-
-                            # Wait for rollout
+                            kubectl apply -f deployment.yaml
                             kubectl rollout status deployment/server -n 2401106
                             kubectl rollout status deployment/client -n 2401106
                         '''
@@ -153,5 +147,6 @@ spec:
                 }
             }
         }
+
     }
 }
