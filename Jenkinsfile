@@ -59,9 +59,9 @@ spec:
                     withCredentials([string(credentialsId: 'sonar-token-2401106', variable: 'SONAR_TOKEN')]) {
                         sh '''
                             sonar-scanner \
-                                -Dsonar.projectKey=2401106_client-server-app \
-                                -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
-                                -Dsonar.login=$SONAR_TOKEN
+                              -Dsonar.projectKey=2401106_client-server-app \
+                              -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
+                              -Dsonar.login=$SONAR_TOKEN
                         '''
                     }
                 }
@@ -71,7 +71,10 @@ spec:
         stage('Login to Nexus Registry') {
             steps {
                 container('dind') {
-                    sh 'docker login nexus.imcc.com -u admin -p Changeme@2025'
+                    sh '''
+                        docker logout || true
+                        docker login http://nexus.imcc.com/2401106 -u admin -p Changeme@2025
+                    '''
                 }
             }
         }
@@ -80,12 +83,20 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker tag server:latest nexus.imcc.com/repository/2401106/server:latest
-                        docker tag client:latest nexus.imcc.com/repository/2401106/client:latest
+                        docker tag server:latest nexus.imcc.com/2401106/server:latest
+                        docker tag client:latest nexus.imcc.com/2401106/client:latest
 
-                        docker push nexus.imcc.com/repository/2401106/server:latest
-                        docker push nexus.imcc.com/repository/2401106/client:latest
+                        docker push nexus.imcc.com/2401106/server:latest
+                        docker push nexus.imcc.com/2401106/client:latest
                     '''
+                }
+            }
+        }
+
+        stage('Create Namespace if Not Exists') {
+            steps {
+                container('kubectl') {
+                    sh 'kubectl apply -f k8s-deployment/namespace.yaml || true'
                 }
             }
         }
@@ -96,7 +107,9 @@ spec:
                     dir('k8s-deployment') {
                         sh '''
                             kubectl apply -f server-deployment.yaml
+                            kubectl apply -f server-service.yaml
                             kubectl apply -f client-deployment.yaml
+                            kubectl apply -f client-service.yaml
 
                             kubectl rollout status deployment/server -n 2401106
                             kubectl rollout status deployment/client -n 2401106

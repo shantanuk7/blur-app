@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: client
-        image: nexus.imcc.com/repository/2401106/client:latest
+        image: image: nexus.imcc.com/2401106/client:latest
         ports:
         - containerPort: 80
         env:

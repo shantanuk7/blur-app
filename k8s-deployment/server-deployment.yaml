@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: nexus.imcc.com/repository/2401106/server:latest
+        image: image: nexus.imcc.com/2401106/server:latest
         ports:
         - containerPort: 5000
         env:
