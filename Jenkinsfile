@@ -10,11 +10,13 @@ spec:
     image: sonarsource/sonar-scanner-cli
     command: ["cat"]
     tty: true
-
   - name: kubectl
     image: bitnami/kubectl:latest
     command: ["cat"]
     tty: true
+    securityContext:
+      runAsUser: 0
+      readOnlyRootFilesystem: false
     env:
     - name: KUBECONFIG
       value: /kube/config
@@ -22,7 +24,6 @@ spec:
     - name: kubeconfig-secret
       mountPath: /kube/config
       subPath: kubeconfig
-
   - name: dind
     image: docker:dind
     args: ["--registry-mirror=https://mirror.gcr.io", "--storage-driver=overlay2"]
@@ -35,7 +36,6 @@ spec:
     - name: docker-config
       mountPath: /etc/docker/daemon.json
       subPath: daemon.json
-
   volumes:
   - name: docker-config
     configMap:
@@ -80,6 +80,8 @@ spec:
             steps {
                 container('dind') {
                     sh '''
+                        docker --version
+                        sleep 10
                         docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025
                     '''
                 }
@@ -100,57 +102,50 @@ spec:
             }
         }
 
-        stage('Create Namespace if Not Exists') {
+        stage('Create Namespace + Secrets') {
             steps {
                 container('kubectl') {
-                    sh 'kubectl apply -f k8s-deployment/namespace.yaml || true'
+                    withCredentials([
+                        string(credentialsId: 'mongo-uri-2401106', variable: 'MONGO_URI'),
+                        string(credentialsId: 'jwt-secret-2401106', variable: 'JWT_SECRET'),
+                        string(credentialsId: 'gmail-user-2401106', variable: 'GMAIL_USER'),
+                        string(credentialsId: 'gmail-pass-2401106', variable: 'GMAIL_PASS')
+                    ]) {
+                        sh '''
+                            # Create namespace directly (no YAML file)
+                            kubectl get namespace 2401106 || kubectl create namespace 2401106
+
+                            # Docker registry pull secret
+                            kubectl create secret docker-registry nexus-secret \
+                              --docker-server=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
+                              --docker-username=admin \
+                              --docker-password=Changeme@2025 \
+                              --namespace=2401106 || true
+
+                            # Application secrets
+                            kubectl create secret generic server-secret -n 2401106 \
+                              --from-literal=MONGO_URI="$MONGO_URI" \
+                              --from-literal=JWT_SECRET="$JWT_SECRET" \
+                              --from-literal=GMAIL_USER="$GMAIL_USER" \
+                              --from-literal=GMAIL_PASS="$GMAIL_PASS" || true
+                        '''
+                    }
                 }
             }
         }
-
-          stage('Create Secrets if Not Exists') {
-              steps {
-                  container('kubectl') {
-                      withCredentials([
-                          string(credentialsId: 'mongo-uri-2401106', variable: 'MONGO_URI'),
-                          string(credentialsId: 'jwt-secret-2401106', variable: 'JWT_SECRET'),
-                          string(credentialsId: 'gmail-user-2401106', variable: 'GMAIL_USER'),
-                          string(credentialsId: 'gmail-pass-2401106', variable: 'GMAIL_PASS')
-                      ]) {
-                          dir('k8s-deployment') {
-                              sh '''
-                                  kubectl apply -f namespace.yaml || true
-
-                                  kubectl create secret docker-registry nexus-secret \
-                                    --docker-server=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
-                                    --docker-username=admin \
-                                    --docker-password=Changeme@2025 \
-                                    --namespace=2401106 || true
-
-                                  kubectl create secret generic server-secret -n 2401106 \
-                                    --from-literal=MONGO_URI="$MONGO_URI" \
-                                    --from-literal=JWT_SECRET="$JWT_SECRET" \
-                                    --from-literal=GMAIL_USER="$GMAIL_USER" \
-                                    --from-literal=GMAIL_PASS="$GMAIL_PASS" || true
-                              '''
-                          }
-                      }
-                  }
-              }
-          }
-
 
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
                     dir('k8s-deployment') {
                         sh '''
-                            kubectl apply -f namespace.yaml
+                            # Apply all resources
                             kubectl apply -f server-deployment.yaml
                             kubectl apply -f server-service.yaml
                             kubectl apply -f client-deployment.yaml
                             kubectl apply -f client-service.yaml
 
+                            # Wait for rollout
                             kubectl rollout status deployment/server -n 2401106
                             kubectl rollout status deployment/client -n 2401106
                         '''
