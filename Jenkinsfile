@@ -49,6 +49,12 @@ spec:
 
     stages {
 
+        stage('CHECK') {
+            steps {
+                echo "DEBUG >>> NEW JENKINSFILE IS ACTIVE"
+            }
+        }
+
         stage('Build Docker Images') {
             steps {
                 container('dind') {
