@@ -25,12 +25,13 @@ spec:
 
   - name: dind
     image: docker:dind
-    args: ["--registry-mirror=https://mirror.gcr.io", "--storage-driver=overlay2"]
+    args: ["--registry-mirror=https://mirror.gcr.io", "--storage-driver=overlay2", "--insecure-registry=nexus.imcc.com"]
     securityContext:
       privileged: true
     env:
     - name: DOCKER_TLS_CERTDIR
       value: ""
+
   volumes:
   - name: kubeconfig-secret
     secret:
