@@ -15,6 +15,9 @@ spec:
     image: bitnami/kubectl:latest
     command: ["cat"]
     tty: true
+    securityContext:
+      runAsUser: 0
+      readOnlyRootFilesystem: false
     env:
     - name: KUBECONFIG
       value: /kube/config
@@ -25,14 +28,21 @@ spec:
 
   - name: dind
     image: docker:dind
-    args: ["--registry-mirror=https://mirror.gcr.io", "--storage-driver=overlay2", "--insecure-registry=nexus.imcc.com"]
+    args: ["--registry-mirror=https://mirror.gcr.io", "--storage-driver=overlay2"]
     securityContext:
       privileged: true
     env:
     - name: DOCKER_TLS_CERTDIR
       value: ""
+    volumeMounts:
+    - name: docker-config
+      mountPath: /etc/docker/daemon.json
+      subPath: daemon.json
 
   volumes:
+  - name: docker-config
+    configMap:
+      name: docker-daemon-config
   - name: kubeconfig-secret
     secret:
       secretName: kubeconfig-secret
@@ -73,8 +83,7 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker logout || true
-                        docker login http://nexus.imcc.com/2401106 -u admin -p Changeme@2025
+                        docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025
                     '''
                 }
             }
@@ -84,11 +93,11 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker tag server:latest nexus.imcc.com/2401106/server:latest
-                        docker tag client:latest nexus.imcc.com/2401106/client:latest
+                        docker tag server:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401106/server:latest
+                        docker tag client:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401106/client:latest
 
-                        docker push nexus.imcc.com/2401106/server:latest
-                        docker push nexus.imcc.com/2401106/client:latest
+                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401106/server:latest
+                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401106/client:latest
                     '''
                 }
             }
