@@ -4,7 +4,7 @@ services:
       context: ./server
       dockerfile: Dockerfile
     env_file:
-      - /etc/blurenvironment/prod_env_server.env
+      - /etc/blurenvironment/.env
     restart: always
     ports:
       - "5000:5000"
