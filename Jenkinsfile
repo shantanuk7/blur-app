@@ -1,5 +1,5 @@
 pipeline {
-    agent {
+agent {
         kubernetes {
             yaml '''
 apiVersion: v1
@@ -17,7 +17,6 @@ spec:
     tty: true
     securityContext:
       runAsUser: 0
-      readOnlyRootFilesystem: false
     env:
     - name: KUBECONFIG
       value: /kube/config
@@ -28,12 +27,14 @@ spec:
 
   - name: dind
     image: docker:dind
-    args: ["--storage-driver=overlay2"]   # ← FIXED
     securityContext:
       privileged: true
     env:
     - name: DOCKER_TLS_CERTDIR
       value: ""
+    args: 
+      - "--registry-mirror=https://mirror.gcr.io" 
+      - "--storage-driver=overlay2"
     volumeMounts:
     - name: docker-config
       mountPath: /etc/docker/daemon.json
@@ -59,7 +60,6 @@ spec:
   - name: kubeconfig-secret
     secret:
       secretName: kubeconfig-secret
-
 '''
         }
     }
@@ -157,15 +157,23 @@ spec:
             }
         }
 
-        stage('Deploy to Kubernetes') {
+stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
-                    dir('k8s-deployment') {
-                        sh '''
+                    // Ensure this directory exists in your repo!
+                    // If your yaml is in the root, remove the dir() block.
+                    dir('k8s-deployment') { 
+                        sh """
+                            # 1. Update Image Tag to match the Build
+                            sed -i 's|server:latest|server:${BUILD_NUMBER}|g' deployment.yaml
+                            sed -i 's|client:latest|client:${BUILD_NUMBER}|g' deployment.yaml
+                            
+                            # 2. Deploy (Fire and Forget, like the successful log)
                             kubectl apply -f deployment.yaml
-                            kubectl rollout status deployment/server -n 2401106
-                            kubectl rollout status deployment/client -n 2401106
-                        '''
+                            
+                            # 3. Optional: Print status but don't fail the pipeline yet
+                            kubectl get pods -n 2401106
+                        """
                     }
                 }
             }

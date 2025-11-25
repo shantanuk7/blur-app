@@ -21,6 +21,10 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Enable preflight for all routes
 app.use(express.json());
 
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 // Authentication routes
 app.use('/api/auth', authRoutes);
 
