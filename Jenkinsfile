@@ -25,22 +25,22 @@ spec:
       mountPath: /kube/config
       subPath: kubeconfig
 
-  - name: dind
-    image: docker:dind
-    securityContext:
-      privileged: true
-    env:
-    - name: DOCKER_TLS_CERTDIR
-      value: ""
-    args: 
-      - "--registry-mirror=https://mirror.gcr.io" 
-      - "--storage-driver=overlay2"
-    volumeMounts:
-    - name: docker-config
-      mountPath: /etc/docker/daemon.json
-      subPath: daemon.json
-    - name: workspace-volume
-      mountPath: /home/jenkins/agent
+    - name: dind
+        image: docker:dind
+        securityContext:
+        privileged: true
+        env:
+        - name: DOCKER_TLS_CERTDIR
+        value: ""
+        args: 
+        - "--storage-driver=overlay2"  
+        # REMOVED: - "--registry-mirror=https://mirror.gcr.io" (It is already in your daemon.json configMap)
+        volumeMounts:
+        - name: docker-config
+        mountPath: /etc/docker/daemon.json
+        subPath: daemon.json
+        - name: workspace-volume
+        mountPath: /home/jenkins/agent
 
   - name: jnlp
     image: jenkins/inbound-agent:3309.v27b_9314fd1a_4-1
