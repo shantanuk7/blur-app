@@ -11,10 +11,10 @@ connectDB();
 const app = express();
 
 const corsOptions = {
-    origin: ['https://blur-app-six.vercel.app','http://localhost:4173', 'http://192.168.1.2:4173', 'http://localhost:5173', 'http://localhost:80', 'http://13.233.70.197' ],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204,
+  origin: ['https://blur-app-six.vercel.app', 'http://localhost:4173', 'http://192.168.1.2:4173', 'http://localhost:5173', 'http://localhost:80', 'http://13.233.70.197'],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
@@ -26,6 +26,8 @@ app.use('/api/auth', authRoutes);
 
 // Note routes (protected by authMiddleware via noteRoutes)
 app.use('/api/notes', noteRoutes);
+
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);

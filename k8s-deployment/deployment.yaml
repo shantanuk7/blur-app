@@ -101,3 +101,22 @@ spec:
       port: 32000
       targetPort: 80
   type: NodePort
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: "2401106"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: 2401106.imcc.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: client-service
+            port:
+              number: 32000
