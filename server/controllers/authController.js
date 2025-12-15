@@ -2,11 +2,8 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
-const mg = require("../config/mailer");
 
-// Register new user with email verification
-const transporter = require('../config/mailer');
-
+// Register new user
 const register = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -24,85 +21,19 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1d' });
-
     user = new User({
       name,
       email,
-      password: hashedPassword,
-      verificationToken
+      password: hashedPassword
     });
 
     await user.save();
 
-    // ✅ Build the full verification link
-    const verificationLink = `${process.env.BASE_URL}/api/auth/verify-email?token=${verificationToken}`;
-
-    // ✅ Compose email with HTML
-    const mailOptions = {
-      from: process.env.GMAIL_USER,
-      to: email,
-      subject: 'Email Verification',
-      text: `Please verify your email: ${verificationLink}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2>Email Verification</h2>
-          <p>Hello ${name},</p>
-          <p>Thank you for registering. Please verify your email by clicking the link below:</p>
-          <a href="${verificationLink}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-            Verify Email
-          </a>
-          <p>If the button doesn't work, copy and paste this URL in your browser:</p>
-          <p>${verificationLink}</p>
-        </div>
-      `
-    };
-
-    // Check for mock credentials
-    if (!process.env.GMAIL_USER || process.env.GMAIL_USER === 'mock' || !process.env.GMAIL_PASS || process.env.GMAIL_PASS === 'mock') {
-      console.log('===========================================================');
-      console.log('MOCK EMAIL SENDING ENABLED');
-      console.log('Verification Link:', verificationLink);
-      console.log('===========================================================');
-      return res.status(201).json({ message: 'Registration successful. Check server logs for verification link.' });
-    }
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Email sending error:', error);
-        return res.status(500).json({ message: 'Email could not be sent' });
-      }
-      res.status(201).json({ message: 'Registration successful. Please verify your email.' });
-    });
+    res.status(201).json({ message: 'Registration successful. You can now login.' });
 
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// Email verification handler
-const verifyEmail = async (req, res) => {
-  const { token } = req.query;
-  if (!token) {
-    return res.status(400).json({ message: "Invalid token" });
-  }
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findOne({
-      email: decoded.email,
-      verificationToken: token,
-    });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid token" });
-    }
-    user.emailVerified = true;
-    user.verificationToken = null;
-    await user.save();
-    res.status(200).json({ message: "Email verified successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(400).json({ message: "Invalid or expired token" });
   }
 };
 
@@ -117,12 +48,6 @@ const login = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    if (!user.emailVerified) {
-      return res
-        .status(401)
-        .json({ message: "Please verify your email before logging in" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -144,4 +69,4 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login, verifyEmail };
+module.exports = { register, login };
