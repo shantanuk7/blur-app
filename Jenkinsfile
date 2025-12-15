@@ -124,50 +124,52 @@ spec:
             }
         }
 
-        stage('Create Namespace + Secrets') {
-            steps {
-                container('kubectl') {
-                    withCredentials([
-                        string(credentialsId: 'mongo-uri-2401106', variable: 'MONGO_URI'),
-                        string(credentialsId: 'jwt-secret-2401106', variable: 'JWT_SECRET'),
-                        string(credentialsId: 'gmail-user-2401106', variable: 'GMAIL_USER'),
-                        string(credentialsId: 'gmail-pass-2401106', variable: 'GMAIL_PASS')
-                    ]) {
-                        sh '''
-                            # Create namespace directly (no YAML file)
-                            kubectl get namespace 2401106 || kubectl create namespace 2401106
+        // stage('Create Namespace + Secrets') {
+        //     steps {
+        //         container('kubectl') {
+        //             withCredentials([
+        //                 string(credentialsId: 'mongo-uri-2401106', variable: 'MONGO_URI'),
+        //                 string(credentialsId: 'jwt-secret-2401106', variable: 'JWT_SECRET'),
+        //                 string(credentialsId: 'gmail-user-2401106', variable: 'GMAIL_USER'),
+        //                 string(credentialsId: 'gmail-pass-2401106', variable: 'GMAIL_PASS')
+        //             ]) {
+        //                 sh '''
+        //                     # Create namespace directly (no YAML file)
+        //                     kubectl get namespace 2401106 || kubectl create namespace 2401106
 
-                            # Docker registry pull secret
-                            kubectl create secret docker-registry nexus-secret \
-                              --docker-server=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
-                              --docker-username=admin \
-                              --docker-password=Changeme@2025 \
-                              --namespace=2401106 || true
+        //                     # Docker registry pull secret
+        //                     kubectl create secret docker-registry nexus-secret \
+        //                       --docker-server=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
+        //                       --docker-username=admin \
+        //                       --docker-password=Changeme@2025 \
+        //                       --namespace=2401106 || true
 
-                            # Application secrets
-                            kubectl create secret generic server-secret -n 2401106 \
-                              --from-literal=MONGO_URI="$MONGO_URI" \
-                              --from-literal=JWT_SECRET="$JWT_SECRET" \
-                              --from-literal=GMAIL_USER="$GMAIL_USER" \
-                              --from-literal=GMAIL_PASS="$GMAIL_PASS" || true
-                        '''
-                    }
-                }
-            }
-        }
+        //                     # Application secrets
+        //                     kubectl create secret generic server-secret -n 2401106 \
+        //                       --from-literal=MONGO_URI="$MONGO_URI" \
+        //                       --from-literal=JWT_SECRET="$JWT_SECRET" \
+        //                       --from-literal=GMAIL_USER="$GMAIL_USER" \
+        //                       --from-literal=GMAIL_PASS="$GMAIL_PASS" || true
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
 
-stage('Deploy to Kubernetes') {
+        stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
                     dir('k8s') {
                         sh """
                             # 1. Update Image Tag to match the Build
-                            sed -i 's|server:latest|server:${BUILD_NUMBER}|g' deployment.yaml
-                            sed -i 's|client:latest|client:${BUILD_NUMBER}|g' deployment.yaml
+                            # sed -i 's|server:latest|server:${BUILD_NUMBER}|g' deployment.yaml
+                            # sed -i 's|client:latest|client:${BUILD_NUMBER}|g' deployment.yaml
                             
                             # 2. Deploy (Fire and Forget)
-                            kubectl apply -f .
+                            kubectl apply -f deployment.yaml
                             
+                            sleep 5
+
                             # 3. Optional: Print status
                             kubectl get pods -n 2401106
                         """
