@@ -13,10 +13,8 @@ You need to create the following **Secret Text** credentials. Make sure the "ID"
 | ID | Type | value (Example/Instruction) |
 |----|------|-----------------------------|
 | `sonar-token-2401106` | Secret Text | Your SonarQube User Token (Generate this in SonarQube) |
-| `mongo-uri-2401106` | Secret Text | `mongodb://mongo:27017/blurapp` (or your external Mongo URI) |
+| `mongo-uri-2401106` | Secret Text | Your MongoDB Atlas Connection String |
 | `jwt-secret-2401106` | Secret Text | Any secure random string (e.g., `mysecretkey`) |
-| `gmail-user-2401106` | Secret Text | Your email (if app uses email features) |
-| `gmail-pass-2401106` | Secret Text | Your email app password |
 
 ## 3. Verify Nexus Credentials
 **Important:** The current `Jenkinsfile` uses default credentials (`admin` / `Changeme@2025`) for Nexus.

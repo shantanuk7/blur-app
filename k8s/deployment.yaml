@@ -54,16 +54,6 @@ spec:
             secretKeyRef:
               name: server-secret
               key: JWT_SECRET
-        - name: GMAIL_USER
-          valueFrom:
-            secretKeyRef:
-              name: server-secret
-              key: GMAIL_USER
-        - name: GMAIL_PASS
-          valueFrom:
-            secretKeyRef:
-              name: server-secret
-              key: GMAIL_PASS
 ---
 apiVersion: apps/v1
 kind: Deployment
