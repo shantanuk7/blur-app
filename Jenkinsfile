@@ -68,7 +68,7 @@ spec:
         APP_NAME        = "blur-server" // Using 'blur-server' as base name, client handling is custom
         IMAGE_TAG       = "latest"
         REGISTRY_URL    = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
-        REGISTRY_REPO   = "my-repository" // As per previous hardcoded value
+        REGISTRY_REPO   = "2401106" // As per previous hardcoded value
         SONAR_PROJECT   = "2401106_client-server-app"
         SONAR_HOST_URL  = "http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
     }
@@ -175,7 +175,7 @@ spec:
                             # sed -i 's|server:latest|server:${BUILD_NUMBER}|g' deployment.yaml
                             
                             # 2. Deploy
-                            kubectl apply -f deployment.yaml
+                            kubectl apply -f .
                             
                             # 3. Verify
                             kubectl rollout status deployment/server -n 2401106 || true
