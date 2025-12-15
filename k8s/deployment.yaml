@@ -8,6 +8,8 @@ kind: Deployment
 metadata:
   name: server
   namespace: "2401106"
+  labels:
+    app: server
 spec:
   replicas: 1
   selector:
@@ -41,7 +43,7 @@ spec:
         - name: PORT
           value: "5000"
         - name: BASE_URL
-          value: "http://server-service.2401106.svc.cluster.local:5000"
+          value: "http://server.2401106.svc.cluster.local:5000"
         - name: MONGO_URI
           valueFrom:
             secretKeyRef:
@@ -63,25 +65,13 @@ spec:
               name: server-secret
               key: GMAIL_PASS
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: server-service
-  namespace: "2401106"
-spec:
-  selector:
-    app: server
-  ports:
-    - protocol: TCP
-      port: 5000
-      targetPort: 5000
-  type: ClusterIP
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: client
   namespace: "2401106"
+  labels:
+    app: client
 spec:
   replicas: 1
   selector:
@@ -99,36 +89,3 @@ spec:
         image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/client:latest
         ports:
         - containerPort: 80
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: client-service
-  namespace: "2401106"
-spec:
-  selector:
-    app: client
-  ports:
-    - protocol: TCP
-      port: 32000
-      targetPort: 80
-  type: NodePort
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: app-ingress
-  namespace: "2401106"
-spec:
-  ingressClassName: nginx
-  rules:
-  - host: 2401106.imcc.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: client-service
-            port:
-              number: 32000
