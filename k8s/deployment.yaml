@@ -32,13 +32,20 @@ spec:
             path: /health
             port: 5000
           initialDelaySeconds: 10
-          periodSeconds: 5
+          periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /health
             port: 5000
-          initialDelaySeconds: 15
-          periodSeconds: 10
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
         env:
         - name: PORT
           value: "5000"
@@ -79,3 +86,10 @@ spec:
         image: 127.0.0.1:30085/2401106/client:latest
         ports:
         - containerPort: 80
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
