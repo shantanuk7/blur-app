@@ -1,5 +1,5 @@
 pipeline {
-agent {
+    agent {
         kubernetes {
             yaml '''
 apiVersion: v1
@@ -17,6 +17,7 @@ spec:
     tty: true
     securityContext:
       runAsUser: 0
+      readOnlyRootFilesystem: false
     env:
     - name: KUBECONFIG
       value: /kube/config
@@ -63,6 +64,15 @@ spec:
         }
     }
 
+    environment {
+        APP_NAME        = "blur-server" // Using 'blur-server' as base name, client handling is custom
+        IMAGE_TAG       = "latest"
+        REGISTRY_URL    = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
+        REGISTRY_REPO   = "my-repository" // As per previous hardcoded value
+        SONAR_PROJECT   = "2401106_client-server-app"
+        SONAR_HOST_URL  = "http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
+    }
+
     stages {
 
         stage('CHECK') {
@@ -76,8 +86,8 @@ spec:
                 container('dind') {
                     sh '''
                         sleep 15
-                        docker build -t server:latest ./server
-                        docker build -t client:latest ./client
+                        docker build -t server:$IMAGE_TAG ./server
+                        docker build -t client:$IMAGE_TAG ./client
                     '''
                 }
             }
@@ -88,9 +98,9 @@ spec:
                 container('sonar-scanner') {
                     withCredentials([string(credentialsId: 'sonar-token-2401106', variable: 'SONAR_TOKEN')]) {
                         sh '''
-                            sonar-scanner \
-                              -Dsonar.projectKey=2401106_client-server-app \
-                              -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
+                            sonar-scanner \\
+                              -Dsonar.projectKey=$SONAR_PROJECT \\
+                              -Dsonar.host.url=$SONAR_HOST_URL \\
                               -Dsonar.login=$SONAR_TOKEN
                         '''
                     }
@@ -104,7 +114,7 @@ spec:
                     sh '''
                         docker --version
                         sleep 10
-                        docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025
+                        docker login $REGISTRY_URL -u admin -p Changeme@2025
                     '''
                 }
             }
@@ -114,11 +124,11 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker tag server:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/server:latest
-                        docker tag client:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/client:latest
+                        docker tag server:$IMAGE_TAG $REGISTRY_URL/$REGISTRY_REPO/server:$IMAGE_TAG
+                        docker tag client:$IMAGE_TAG $REGISTRY_URL/$REGISTRY_REPO/client:$IMAGE_TAG
 
-                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/server:latest
-                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/client:latest
+                        docker push $REGISTRY_URL/$REGISTRY_REPO/server:$IMAGE_TAG
+                        docker push $REGISTRY_URL/$REGISTRY_REPO/client:$IMAGE_TAG
                     '''
                 }
             }
@@ -161,22 +171,19 @@ spec:
                 container('kubectl') {
                     dir('k8s') {
                         sh """
-                            # 1. Update Image Tag to match the Build
+                            # 1. Update Image Tag (Optional if using build number)
                             # sed -i 's|server:latest|server:${BUILD_NUMBER}|g' deployment.yaml
-                            # sed -i 's|client:latest|client:${BUILD_NUMBER}|g' deployment.yaml
                             
-                            # 2. Deploy (Fire and Forget)
+                            # 2. Deploy
                             kubectl apply -f deployment.yaml
                             
-                            sleep 5
-
-                            # 3. Optional: Print status
+                            # 3. Verify
+                            kubectl rollout status deployment/server -n 2401106 || true
                             kubectl get pods -n 2401106
                         """
                     }
                 }
             }
         }
-
     }
 }
