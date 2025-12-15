@@ -58,6 +58,15 @@ const register = async (req, res) => {
       `
     };
 
+    // Check for mock credentials
+    if (!process.env.GMAIL_USER || process.env.GMAIL_USER === 'mock' || !process.env.GMAIL_PASS || process.env.GMAIL_PASS === 'mock') {
+      console.log('===========================================================');
+      console.log('MOCK EMAIL SENDING ENABLED');
+      console.log('Verification Link:', verificationLink);
+      console.log('===========================================================');
+      return res.status(201).json({ message: 'Registration successful. Check server logs for verification link.' });
+    }
+
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error('Email sending error:', error);
